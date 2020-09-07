@@ -5,11 +5,15 @@ import cv2
 
 
 class AbstractPredictor(threading.Thread, ABC):
-    def __init__(self, name, PATH_TO_CKPT,
-                 PATH_TO_LABELS,
-                 IMG_SCALE,
-                 WITH_TRACKER=True,
-                 ENABLE_BY_DEFAULT=False):
+    def __init__(
+        self,
+        name,
+        PATH_TO_CKPT,
+        PATH_TO_LABELS,
+        IMG_SCALE,
+        WITH_TRACKER=True,
+        ENABLE_BY_DEFAULT=False,
+    ):
 
         threading.Thread.__init__(self)
         ABC.__init__(self)
@@ -22,8 +26,7 @@ class AbstractPredictor(threading.Thread, ABC):
         # TRACKER
         self.WITH_TRACKER = WITH_TRACKER
         try:
-            self.category_index, self.NUM_CLASSES = self.get_label_map(
-                PATH_TO_LABELS)
+            self.category_index, self.NUM_CLASSES = self.get_label_map(PATH_TO_LABELS)
         except:
             self.done = True
             self.category_index = None
@@ -40,14 +43,12 @@ class AbstractPredictor(threading.Thread, ABC):
         for indx, x in enumerate(data):
             if len(x) == 0:
                 continue
-            name = x.split('name:')[1].split('\n')[0].strip().replace('"','')
+            name = x.split('name:')[1].split('\n')[0].strip().replace('"', '')
             _id = x.split('id:')[1].split('\n')[0].strip()
-            display_name = x.split('display_name:')[1].split('\n')[0].strip().replace('"','')
-            output_data[indx] = {
-                'name':display_name,
-                'id':_id,
-                'display_name':name
-            }
+            display_name = (
+                x.split('display_name:')[1].split('\n')[0].strip().replace('"', '')
+            )
+            output_data[indx] = {'name': display_name, 'id': _id, 'display_name': name}
             num_classes += 1
         category_index = output_data
         return category_index, num_classes
@@ -72,6 +73,7 @@ class AbstractPredictor(threading.Thread, ABC):
             graph = get_graph(PATH_TO_CKPT)
             sess = tf.compat.v1.Session(graph=graph)
             return graph, sess
+
         # Load the graphs.
         [graph, sess] = load_graph_with_sess(PATH_TO_MODEL)
         print('Finished Loading Model')
@@ -105,8 +107,11 @@ class AbstractPredictor(threading.Thread, ABC):
         '''
         if self.IMG_SCALE < 1.0:
             self.output_data.image_np = cv2.resize(
-                self.image_data.image_np.copy(), (0, 0),
-                fx=self.IMG_SCALE, fy=self.IMG_SCALE)
+                self.image_data.image_np.copy(),
+                (0, 0),
+                fx=self.IMG_SCALE,
+                fy=self.IMG_SCALE,
+            )
         else:
             self.output_data.image_np = self.image_data.image_np
         return self.output_data.image_np
